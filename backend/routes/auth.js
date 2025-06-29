@@ -6,17 +6,15 @@ const auth = require('../middleware/auth');
 const router = express.Router();
 
 // Login route
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
     const { email, password } = req.body;
     
     if (!email || !password) {
         return res.status(400).json({ message: 'Please provide email and password' });
     }
     
-    db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
+    try {
+        const user = await db.get('SELECT * FROM users WHERE email = $1', [email]);
         
         if (!user) {
             return res.status(400).json({ message: 'Invalid credentials' });
@@ -35,19 +33,21 @@ router.post('/login', (req, res) => {
             }
         };
         
-        jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '24h' }, (err, token) => {
-            if (err) throw err;
-            res.json({
-                token,
-                user: {
-                    id: user.id,
-                    email: user.email,
-                    name: user.name,
-                    role: user.role
-                }
-            });
+        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '24h' });
+        
+        res.json({
+            token,
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                role: user.role
+            }
         });
-    });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
 // Create user route (for admin to create tenants)
@@ -81,13 +81,11 @@ router.post('/create-user', async (req, res) => {
 });
 
 // Get current user route
-router.get('/me', auth, (req, res) => {
+router.get('/me', auth, async (req, res) => {
     const userId = req.user.user.id;
     
-    db.get('SELECT id, name, email, role, phone, created_at FROM users WHERE id = ?', [userId], (err, user) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
+    try {
+        const user = await db.get('SELECT id, name, email, role, phone, created_at FROM users WHERE id = $1', [userId]);
         
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -101,7 +99,10 @@ router.get('/me', auth, (req, res) => {
             phone: user.phone,
             created_at: user.created_at
         });
-    });
+    } catch (error) {
+        console.error('Get user error:', error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
 module.exports = router;

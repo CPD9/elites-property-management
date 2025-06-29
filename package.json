@@ -1,0 +1,53 @@
+{
+  "name": "tenant-management-system",
+  "version": "1.0.0",
+  "description": "A comprehensive property management platform with integrated Paystack payment processing",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js",
+    "client": "cd frontend && npm start",
+    "server": "nodemon backend/server.js",
+    "build": "cd frontend && npm run build",
+    "install-client": "cd frontend && npm install",
+    "install-server": "npm install",
+    "install-all": "npm run install-server && npm run install-client",
+    "heroku-postbuild": "npm run install-client && npm run build"
+  },
+  "keywords": [
+    "property-management",
+    "tenant-portal",
+    "paystack-integration",
+    "react",
+    "nodejs",
+    "payment-system",
+    "real-estate"
+  ],
+  "author": "cpd9",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "sqlite3": "^5.1.6",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "nodemailer": "^6.9.7",
+    "paystack": "^2.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cpd9/tenant-management.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cpd9/tenant-management/issues"
+  },
+  "homepage": "https://github.com/cpd9/tenant-management#readme"
+}

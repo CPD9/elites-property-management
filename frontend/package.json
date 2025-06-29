@@ -15,7 +15,7 @@
     "react-dom": "^18.3.1",
     "react-hot-toast": "^2.5.2",
     "react-router-dom": "^7.6.1",
-    "react-scripts": "4.0.3",
+    "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
@@ -51,10 +51,12 @@
   },
   "overrides": {
     "ajv": "^8.12.0",
-    "fork-ts-checker-webpack-plugin": "6.5.3"
+    "fork-ts-checker-webpack-plugin": "^6.5.3",
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/parser": "^5.0.0"
   },
   "resolutions": {
     "ajv": "^8.12.0",
-    "fork-ts-checker-webpack-plugin": "6.5.3"
+    "fork-ts-checker-webpack-plugin": "^6.5.3"
   }
 }

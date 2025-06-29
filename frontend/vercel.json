@@ -1,28 +1,11 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "build"
-      }
-    }
-  ],
+  "buildCommand": "npm install --legacy-peer-deps && npm run vercel-build",
+  "outputDirectory": "build",
   "routes": [
     {
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ],
-  "functions": {
-    "app/api/**/*.js": {
-      "runtime": "nodejs18.x"
-    }
-  },
-  "env": {
-    "NODE_VERSION": "18.20.4",
-    "REACT_APP_API_URL": "https://elites-property-backend.onrender.com/api",
-    "REACT_APP_PAYSTACK_PUBLIC_KEY": "pk_test_cdb1a6261d6f98525d31ff79b1e7273179ec7eb8"
-  }
+  ]
 }

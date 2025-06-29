@@ -8,7 +8,8 @@
     "dev": "nodemon backend/server.js",
     "client": "cd frontend && npm start",
     "server": "nodemon backend/server.js",
-    "build": "cd frontend && npm run build",
+    "build": "node backend/migrate-to-postgres.js",
+    "migrate": "node backend/migrate-to-postgres.js",
     "install-client": "cd frontend && npm install",
     "install-server": "npm install",
     "install-all": "npm run install-server && npm run install-client",
@@ -26,14 +27,15 @@
   "author": "cpd9",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.18.2",
-    "sqlite3": "^5.1.6",
-    "bcryptjs": "^2.4.3",
+    "express": "^5.1.0",
+    "sqlite3": "^5.1.7",
+    "bcryptjs": "^3.0.2",
     "jsonwebtoken": "^9.0.2",
     "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "nodemailer": "^6.9.7",
-    "paystack": "^2.0.1"
+    "dotenv": "^16.5.0",
+    "nodemailer": "^7.0.3",
+    "paystack": "^2.0.1",
+    "pg": "^8.16.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"

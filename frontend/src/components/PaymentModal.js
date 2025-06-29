@@ -1,22 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { X, CreditCard, AlertCircle, Clock, CheckCircle } from 'lucide-react';
-import { usePaystackPayment } from 'react-paystack';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-const PaymentModal = ({ isOpen, onClose, overduePayments, onPaymentSuccess }) => {
+const PaymentModal = ({ isOpen, onClose, overduePayments, onPaymentSuccess, specificPaymentId = null, allPayments = [] }) => {
   const [selectedPayments, setSelectedPayments] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [paymentConfig, setPaymentConfig] = useState(null);
 
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
-  // Initialize all overdue payments as selected
+  // Initialize payments as selected based on specificPaymentId or all overdue
   useEffect(() => {
-    if (overduePayments && overduePayments.length > 0) {
+    if (specificPaymentId) {
+      // If specific payment ID is provided, only select that payment
+      setSelectedPayments([specificPaymentId]);
+    } else if (overduePayments && overduePayments.length > 0) {
+      // Otherwise, select all overdue payments
       setSelectedPayments(overduePayments.map(p => p.id));
     }
-  }, [overduePayments]);
+  }, [overduePayments, specificPaymentId]);
 
   const togglePaymentSelection = (paymentId) => {
     setSelectedPayments(prev => {
@@ -29,6 +31,29 @@ const PaymentModal = ({ isOpen, onClose, overduePayments, onPaymentSuccess }) =>
   };
 
   const getSelectedPaymentsData = () => {
+    if (specificPaymentId) {
+      // Find the specific payment from either overduePayments or all payments
+      let specificPayment = overduePayments.find(p => p.id === specificPaymentId);
+      if (!specificPayment && allPayments.length > 0) {
+        // Look in all payments if not found in overdue
+        const payment = allPayments.find(p => p.payment_id === specificPaymentId);
+        if (payment) {
+          // Calculate late fee for this payment
+          const dueDate = new Date(payment.due_date);
+          const isOverdue = dueDate < new Date() && payment.payment_status === 'pending';
+          const lateFee = isOverdue ? Math.round(payment.amount * 0.05 * 100) / 100 : 0;
+          specificPayment = {
+            id: payment.payment_id,
+            property_name: payment.property_name,
+            amount: payment.amount,
+            due_date: payment.due_date,
+            late_fee: lateFee,
+            total_amount_due: payment.amount + lateFee
+          };
+        }
+      }
+      return specificPayment ? [specificPayment] : [];
+    }
     return overduePayments.filter(payment => selectedPayments.includes(payment.id));
   };
 
@@ -67,31 +92,34 @@ const PaymentModal = ({ isOpen, onClose, overduePayments, onPaymentSuccess }) =>
         return;
       }
 
+      console.log('🔍 Payment initialization debug:', {
+        selectedPayments,
+        totalAmount: getTotalAmount(),
+        token: token.substring(0, 20) + '...',
+        apiUrl: API_URL
+      });
+
       const response = await axios.post(`${API_URL}/payments/initialize`, {
         paymentIds: selectedPayments,
         totalAmount: getTotalAmount()
       }, {
         headers: {
-          'x-auth-token': token
+          'x-auth-token': token,
+          'Content-Type': 'application/json'
         }
       });
 
       if (response.data.success) {
-        // Configure Paystack
-        const config = {
-          reference: response.data.reference,
-          email: localStorage.getItem('userEmail') || 'tenant@example.com',
-          amount: Math.round(getTotalAmount() * 100), // Convert to kobo
-          publicKey: process.env.REACT_APP_PAYSTACK_PUBLIC_KEY,
-          text: 'Pay Now',
-          onSuccess: (reference) => handlePaymentSuccess(reference),
-          onClose: () => {
-            setIsLoading(false);
-            toast.info('Payment cancelled');
-          },
-        };
+        console.log('✅ Payment initialized successfully:', response.data);
         
-        setPaymentConfig(config);
+        // Redirect directly to Paystack checkout
+        if (response.data.authorization_url) {
+          setIsLoading(false);
+          window.location.href = response.data.authorization_url;
+        } else {
+          toast.error('Payment URL not received');
+          setIsLoading(false);
+        }
       }
     } catch (error) {
       console.error('Payment initialization error:', error);
@@ -124,19 +152,9 @@ const PaymentModal = ({ isOpen, onClose, overduePayments, onPaymentSuccess }) =>
     setIsLoading(false);
   };
 
-  const initializePaystackPayment = usePaystackPayment(paymentConfig || {});
-
   const handlePayNowClick = () => {
     initializePayment();
   };
-
-  // Trigger Paystack when config is ready
-  useEffect(() => {
-    if (paymentConfig) {
-      initializePaystackPayment();
-      setPaymentConfig(null); // Reset to prevent multiple triggers
-    }
-  }, [paymentConfig, initializePaystackPayment]);
 
   if (!isOpen) return null;
 

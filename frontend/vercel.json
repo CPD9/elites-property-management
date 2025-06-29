@@ -1,0 +1,22 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "build"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "env": {
+    "REACT_APP_API_URL": "https://elites-property-backend.onrender.com/api",
+    "REACT_APP_PAYSTACK_PUBLIC_KEY": "pk_test_cdb1a6261d6f98525d31ff79b1e7273179ec7eb8"
+  }
+}

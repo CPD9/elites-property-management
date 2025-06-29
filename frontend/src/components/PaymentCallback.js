@@ -27,7 +27,18 @@ const PaymentCallback = () => {
 
   const verifyPayment = async (reference) => {
     try {
-      const response = await axios.post(`${API_URL}/payments/verify/${reference}`);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setStatus('failed');
+        setMessage('Authentication required. Please login again.');
+        return;
+      }
+
+      const response = await axios.post(`${API_URL}/payments/verify/${reference}`, {}, {
+        headers: {
+          'x-auth-token': token
+        }
+      });
       
       if (response.data.success) {
         setStatus('success');

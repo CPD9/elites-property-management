@@ -23,10 +23,12 @@ import toast, { Toaster } from 'react-hot-toast';
 const TenantDashboard = () => {
   const [payments, setPayments] = useState([]);
   const [overduePayments, setOverduePayments] = useState([]);
+  const [pendingPayments, setPendingPayments] = useState([]);
   const [lease, setLease] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [specificPaymentId, setSpecificPaymentId] = useState(null);
 
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
@@ -36,15 +38,17 @@ const TenantDashboard = () => {
 
   const fetchTenantData = async () => {
     try {
-      const [paymentsRes, leaseRes, overdueRes] = await Promise.all([
+      const [paymentsRes, leaseRes, overdueRes, pendingRes] = await Promise.all([
         axios.get(`${API_URL}/tenants/my-payments`),
         axios.get(`${API_URL}/tenants/my-lease`),
-        axios.get(`${API_URL}/payments/overdue`)
+        axios.get(`${API_URL}/payments/overdue`),
+        axios.get(`${API_URL}/payments/pending`)
       ]);
       
       setPayments(paymentsRes.data);
       setLease(leaseRes.data);
       setOverduePayments(overdueRes.data.payments || []);
+      setPendingPayments(pendingRes.data || []);
     } catch (error) {
       console.error('Error fetching tenant data:', error);
     }
@@ -223,7 +227,10 @@ const TenantDashboard = () => {
                 </div>
               </div>
               <button
-                onClick={() => setShowPaymentModal(true)}
+                onClick={() => {
+                  setSpecificPaymentId(null); // Reset to show all overdue payments
+                  setShowPaymentModal(true);
+                }}
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
               >
                 <CreditCard className="h-4 w-4 mr-2" />
@@ -328,6 +335,7 @@ const TenantDashboard = () => {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
+                                  setSpecificPaymentId(payment.payment_id);
                                   setShowPaymentModal(true);
                                 }}
                                 className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-white bg-indigo-600 hover:bg-indigo-700"
@@ -390,13 +398,62 @@ const TenantDashboard = () => {
             {/* Payments Tab */}
             {activeTab === 'payments' && (
               <div className="space-y-6">
+                {/* Pending Payments Section (Not Yet Due) */}
+                {pendingPayments.length > 0 && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-medium text-blue-800">💳 Upcoming Payments</h3>
+                      <span className="text-sm text-blue-600">Pay early to avoid late fees</span>
+                    </div>
+                    <div className="space-y-3">
+                      {pendingPayments.map((payment) => (
+                        <div key={payment.id} className="bg-white rounded-lg p-4 border border-blue-200">
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <div className="flex items-center">
+                                <span className="text-sm font-medium text-gray-900">{payment.property_name}</span>
+                                <span className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
+                                  Due in {Math.ceil((new Date(payment.due_date) - new Date()) / (1000 * 60 * 60 * 24))} days
+                                </span>
+                              </div>
+                              <p className="text-xs text-gray-500 mt-1">
+                                Due: {formatDate(payment.due_date)}
+                              </p>
+                            </div>
+                            <div className="flex items-center space-x-3">
+                              <div className="text-right">
+                                <div className="text-lg font-bold text-blue-600">
+                                  {formatCurrency(payment.amount)}
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => {
+                                  setSpecificPaymentId(payment.id);
+                                  setShowPaymentModal(true);
+                                }}
+                                className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700"
+                              >
+                                <CreditCard className="h-3 w-3 mr-1" />
+                                Pay Early
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Overdue Payments Section */}
                 {overduePayments.length > 0 && (
                   <div className="bg-red-50 border border-red-200 rounded-lg p-6">
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-lg font-medium text-red-800">⚠️ Overdue Payments</h3>
                       <button
-                        onClick={() => setShowPaymentModal(true)}
+                        onClick={() => {
+                          setSpecificPaymentId(null); // Show all overdue payments
+                          setShowPaymentModal(true);
+                        }}
                         className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700"
                       >
                         <CreditCard className="h-4 w-4 mr-2" />
@@ -500,13 +557,27 @@ const TenantDashboard = () => {
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                               {payment.payment_status === 'overdue' ? (
                                 <button
-                                  onClick={() => setShowPaymentModal(true)}
+                                  onClick={() => {
+                                    setSpecificPaymentId(payment.payment_id);
+                                    setShowPaymentModal(true);
+                                  }}
                                   className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700"
                                 >
                                   <CreditCard className="h-3 w-3 mr-1" />
                                   Pay Now
                                 </button>
-                              ) : payment.status === 'paid' ? (
+                              ) : payment.payment_status === 'pending' ? (
+                                <button
+                                  onClick={() => {
+                                    setSpecificPaymentId(payment.payment_id);
+                                    setShowPaymentModal(true);
+                                  }}
+                                  className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700"
+                                >
+                                  <CreditCard className="h-3 w-3 mr-1" />
+                                  Pay Now
+                                </button>
+                              ) : payment.payment_status === 'paid' ? (
                                 <span className="text-green-600 text-xs">✓ Paid</span>
                               ) : (
                                 <span className="text-gray-400 text-xs">-</span>
@@ -616,11 +687,17 @@ const TenantDashboard = () => {
         {/* Payment Modal */}
         <PaymentModal
           isOpen={showPaymentModal}
-          onClose={() => setShowPaymentModal(false)}
+          onClose={() => {
+            setShowPaymentModal(false);
+            setSpecificPaymentId(null); // Reset specific payment ID
+          }}
           overduePayments={overduePayments}
+          allPayments={payments}
+          specificPaymentId={specificPaymentId}
           onPaymentSuccess={() => {
             fetchTenantData();
             setShowPaymentModal(false);
+            setSpecificPaymentId(null);
             toast.success('Payments updated successfully!');
           }}
         />

@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: elites-property-backend
+    env: node
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: PAYSTACK_SECRET_KEY
+        value: sk_test_c3555c395f7c2b6a4528e261eac6f95316ea5383
+      - key: PAYSTACK_PUBLIC_KEY
+        value: pk_test_cdb1a6261d6f98525d31ff79b1e7273179ec7eb8
+      - key: EMAIL_USER
+        value: noreply@elitesproperty.com
+      - key: EMAIL_PASS
+        value: your_app_password_here
+      - key: MOCK_EMAIL
+        value: true
+      - key: FRONTEND_URL
+        value: https://elites-property-frontend.onrender.com
+databases:
+  - name: elites-property-db
+    databaseName: tenant_management
+    user: tenant_user

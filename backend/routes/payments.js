@@ -11,6 +11,17 @@ router.post('/initialize', auth, async (req, res) => {
     const userId = req.user.user.id;
     const userEmail = req.user.user.email;
     
+    console.log('🚀 Payment initialization request:', {
+        userId,
+        userEmail,
+        paymentIds,
+        totalAmount,
+        paystackKeysConfigured: {
+            secret: !!process.env.PAYSTACK_SECRET_KEY,
+            public: !!process.env.PAYSTACK_PUBLIC_KEY
+        }
+    });
+    
     // Validate payment IDs belong to the authenticated user
     const paymentQuery = `
         SELECT p.*, pr.name as property_name 
@@ -57,6 +68,14 @@ router.post('/initialize', auth, async (req, res) => {
         
         // Create Paystack transaction
         try {
+            console.log('🔧 Attempting Paystack transaction initialization...');
+            console.log('Paystack params:', {
+                email: userEmail,
+                amount: Math.round(actualTotal * 100),
+                reference: `TM_${Date.now()}_${userId}`,
+                callback_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/callback`
+            });
+            
             const paystackResponse = await Paystack.transaction.initialize({
                 email: userEmail,
                 amount: Math.round(actualTotal * 100), // Convert to kobo
@@ -78,6 +97,8 @@ router.post('/initialize', auth, async (req, res) => {
                 }
             });
             
+            console.log('✅ Paystack response received:', paystackResponse.status ? 'SUCCESS' : 'FAILED');
+            
             // Store transaction in database
             const transactionQuery = `
                 INSERT INTO payment_transactions 
@@ -93,9 +114,15 @@ router.post('/initialize', auth, async (req, res) => {
                 JSON.stringify(paystackResponse.data)
             ], function(err) {
                 if (err) {
-                    console.error('Error storing transaction:', err);
-                    return res.status(500).json({ error: 'Failed to store transaction' });
+                    console.error('❌ Error storing transaction:', err.message);
+                    console.error('Full error:', err);
+                    return res.status(500).json({ 
+                        error: 'Failed to store transaction',
+                        details: err.message 
+                    });
                 }
+                
+                console.log('✅ Transaction stored successfully with ID:', this.lastID);
                 
                 res.json({
                     success: true,

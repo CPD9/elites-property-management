@@ -18,6 +18,7 @@ export const AuthProvider = ({ children }) => {
 
   // Set up axios defaults
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+  console.log('🔗 API_URL:', API_URL); // Debug log to verify correct URL
   
   const logout = () => {
     localStorage.removeItem('token');

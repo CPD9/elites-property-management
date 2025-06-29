@@ -21,14 +21,31 @@ app.get('/', (req, res) => {
 });
 
 // Test database route
-app.get('/api/test-db', (req, res) => {
-    db.get("SELECT name FROM sqlite_master WHERE type='table'", (err, row) => {
-        if (err) {
-            res.status(500).json({ error: err.message });
+app.get('/api/test-db', async (req, res) => {
+    try {
+        // Check if PostgreSQL or SQLite
+        const isProduction = process.env.NODE_ENV === 'production';
+        
+        if (isProduction) {
+            // PostgreSQL query
+            const result = await db.query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
+            res.json({ 
+                message: 'PostgreSQL Database connected!', 
+                database: 'PostgreSQL',
+                tables: result.rows.map(row => row.table_name)
+            });
         } else {
-            res.json({ message: 'Database connected!', tables: row });
+            // SQLite query
+            const row = await db.get("SELECT name FROM sqlite_master WHERE type='table'");
+            res.json({ 
+                message: 'SQLite Database connected!', 
+                database: 'SQLite',
+                tables: row 
+            });
         }
-    });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // Routes

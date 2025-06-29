@@ -9,7 +9,18 @@ const db = require('./config/database');
 const app = express();
 
 // Middleware
-app.use(cors());
+const corsOptions = {
+    origin: [
+        'https://elitesproject.netlify.app',
+        'http://localhost:3000',
+        'http://localhost:3001'
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token']
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Initialize email service

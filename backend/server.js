@@ -12,6 +12,7 @@ const app = express();
 const corsOptions = {
     origin: [
         'https://elitesproject.netlify.app',
+        /https:\/\/.*--elitesproject\.netlify\.app$/,  // Allow all deploy previews
         'http://localhost:3000',
         'http://localhost:3001'
     ],

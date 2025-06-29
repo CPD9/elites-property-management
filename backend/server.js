@@ -13,6 +13,7 @@ const corsOptions = {
     origin: [
         'https://elitesproject.netlify.app',
         /https:\/\/.*--elitesproject\.netlify\.app$/,  // Allow all deploy previews
+        'https://elites-property-management.onrender.com',  // Render frontend
         'http://localhost:3000',
         'http://localhost:3001'
     ],

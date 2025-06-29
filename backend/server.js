@@ -39,7 +39,7 @@ app.use('/api/calendar', require('./routes/calendar'));
 app.use('/api/maintenance', require('./routes/maintenance'));
 app.use('/api/payments', require('./routes/payments'));
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });

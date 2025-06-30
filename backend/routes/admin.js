@@ -8,31 +8,32 @@ const { sendEmail, emailTemplates } = require('../config/email');
 
 
 // Get all tenants and their payment status
-router.get('/dashboard', auth, (req, res) => {
+router.get('/dashboard', auth, async (req, res) => {
     if (req.user.user.role !== 'admin') {
         return res.status(403).json({ message: 'Access denied' });
     }
     
-    const query = `
-        SELECT 
-            u.id, u.name, u.email, u.phone,
-            p.name as property_name, p.rent_amount,
-            l.start_date, l.end_date,
-            pay.payment_date, pay.due_date, pay.status as payment_status, pay.amount
-        FROM users u
-        LEFT JOIN leases l ON u.id = l.user_id
-        LEFT JOIN properties p ON l.property_id = p.id
-        LEFT JOIN payments pay ON u.id = pay.user_id
-        WHERE u.role = 'tenant'
-        ORDER BY u.name
-    `;
-    
-    db.all(query, [], (err, rows) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
+    try {
+        const query = `
+            SELECT 
+                u.id, u.name, u.email, u.phone,
+                p.name as property_name, p.rent_amount,
+                l.start_date, l.end_date,
+                pay.payment_date, pay.due_date, pay.status as payment_status, pay.amount
+            FROM users u
+            LEFT JOIN leases l ON u.id = l.user_id
+            LEFT JOIN properties p ON l.property_id = p.id
+            LEFT JOIN payments pay ON u.id = pay.user_id
+            WHERE u.role = 'tenant'
+            ORDER BY u.name
+        `;
+        
+        const rows = await db.all(query, []);
         res.json(rows);
-    });
+    } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
 // Update to the create tenant route 
@@ -355,38 +356,38 @@ router.post('/send-payment-reminders', auth, (req, res) => {
 });
 
 // Get upcoming payments for preview
-router.get('/upcoming-payments', auth, (req, res) => {
+router.get('/upcoming-payments', auth, async (req, res) => {
     if (req.user.user.role !== 'admin') {
         return res.status(403).json({ message: 'Access denied' });
     }
     
     const { days_ahead = 7 } = req.query;
     
-    const query = `
-        SELECT 
-            p.id as payment_id,
-            u.name as tenant_name,
-            u.email,
-            pr.name as property_name,
-            p.amount,
-            p.due_date,
-            julianday(p.due_date) - julianday('now') as days_until_due
-        FROM payments p
-        JOIN users u ON p.user_id = u.id
-        JOIN properties pr ON p.property_id = pr.id
-        WHERE p.status = 'pending' 
-        AND p.due_date > date('now')
-        AND julianday(p.due_date) - julianday('now') <= ?
-        ORDER BY p.due_date ASC
-    `;
-    
-    db.all(query, [days_ahead], (err, upcomingPayments) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
+    try {
+        const query = `
+            SELECT 
+                p.id as payment_id,
+                u.name as tenant_name,
+                u.email,
+                pr.name as property_name,
+                p.amount,
+                p.due_date,
+                EXTRACT(EPOCH FROM (p.due_date::date - CURRENT_DATE)) / 86400 as days_until_due
+            FROM payments p
+            JOIN users u ON p.user_id = u.id
+            JOIN properties pr ON p.property_id = pr.id
+            WHERE p.status = 'pending' 
+            AND p.due_date > CURRENT_DATE
+            AND EXTRACT(EPOCH FROM (p.due_date::date - CURRENT_DATE)) / 86400 <= $1
+            ORDER BY p.due_date ASC
+        `;
         
+        const upcomingPayments = await db.all(query, [days_ahead]);
         res.json(upcomingPayments);
-    });
+    } catch (error) {
+        console.error('Error fetching upcoming payments:', error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
 // Mark payment as paid

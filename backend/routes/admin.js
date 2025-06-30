@@ -43,32 +43,31 @@ router.post('/tenants', auth, async (req, res) => {
     }
     
     const { name, email, phone, password } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
     
-    db.run(
-        'INSERT INTO users (name, email, phone, password, role) VALUES (?, ?, ?, ?, ?)',
-        [name, email, phone, hashedPassword, 'tenant'],
-        async function(err) {
-            if (err) {
-                return res.status(500).json({ error: err.message });
-            }
-            
-            // Send welcome email to new tenant
-            try {
-                const welcomeTemplate = emailTemplates.welcomeTenant(name, email, password, null);
-                await sendEmail(email, welcomeTemplate);
-                console.log(`Welcome email sent to ${email}`);
-            } catch (emailError) {
-                console.log('Failed to send welcome email:', emailError);
-                // Don't fail the tenant creation if email fails
-            }
-            
-            res.json({
-                message: 'Tenant created successfully and welcome email sent',
-                tenantId: this.lastID
-            });
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        const result = await db.run(
+            'INSERT INTO users (name, email, phone, password, role) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+            [name, email, phone, hashedPassword, 'tenant']
+        );
+        
+        // Send welcome email to new tenant
+        try {
+            const welcomeTemplate = emailTemplates.welcomeTenant(name, email, password, null);
+            await sendEmail(email, welcomeTemplate);
+        } catch (emailError) {
+            // Don't fail the tenant creation if email fails
         }
-    );
+        
+        res.json({
+            message: 'Tenant created successfully and welcome email sent',
+            tenantId: result.lastID
+        });
+    } catch (error) {
+        console.error('Error creating tenant:', error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
 // Add property

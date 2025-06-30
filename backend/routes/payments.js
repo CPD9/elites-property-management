@@ -11,31 +11,20 @@ router.post('/initialize', auth, async (req, res) => {
     const userId = req.user.user.id;
     const userEmail = req.user.user.email;
     
-    console.log('🚀 Payment initialization request:', {
-        userId,
-        userEmail,
-        paymentIds,
-        totalAmount,
-        paystackKeysConfigured: {
-            secret: !!process.env.PAYSTACK_SECRET_KEY,
-            public: !!process.env.PAYSTACK_PUBLIC_KEY
-        }
-    });
     
     // Validate payment IDs belong to the authenticated user
+    const placeholders = paymentIds.map((_, index) => `$${index + 1}`).join(',');
     const paymentQuery = `
         SELECT p.*, pr.name as property_name 
         FROM payments p 
         JOIN properties pr ON p.property_id = pr.id 
-        WHERE p.id IN (${paymentIds.map(() => '?').join(',')}) 
-        AND p.user_id = ? 
+        WHERE p.id IN (${placeholders}) 
+        AND p.user_id = $${paymentIds.length + 1}
         AND p.status = 'pending'
     `;
     
-    db.all(paymentQuery, [...paymentIds, userId], async (err, payments) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
+    try {
+        const payments = await db.all(paymentQuery, [...paymentIds, userId]);
         
         if (payments.length === 0) {
             return res.status(404).json({ message: 'No valid payments found' });
@@ -68,13 +57,6 @@ router.post('/initialize', auth, async (req, res) => {
         
         // Create Paystack transaction
         try {
-            console.log('🔧 Attempting Paystack transaction initialization...');
-            console.log('Paystack params:', {
-                email: userEmail,
-                amount: Math.round(actualTotal * 100),
-                reference: `TM_${Date.now()}_${userId}`,
-                callback_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/callback`
-            });
             
             const paystackResponse = await Paystack.transaction.initialize({
                 email: userEmail,
@@ -97,39 +79,29 @@ router.post('/initialize', auth, async (req, res) => {
                 }
             });
             
-            console.log('✅ Paystack response received:', paystackResponse.status ? 'SUCCESS' : 'FAILED');
             
             // Store transaction in database
             const transactionQuery = `
                 INSERT INTO payment_transactions 
                 (reference, user_id, amount, payment_ids, status, paystack_data) 
-                VALUES (?, ?, ?, ?, 'pending', ?)
+                VALUES ($1, $2, $3, $4, 'pending', $5)
+                RETURNING id
             `;
             
-            db.run(transactionQuery, [
+            const result = await db.run(transactionQuery, [
                 paystackResponse.data.reference,
                 userId,
                 actualTotal,
                 paymentIds.join(','),
                 JSON.stringify(paystackResponse.data)
-            ], function(err) {
-                if (err) {
-                    console.error('❌ Error storing transaction:', err.message);
-                    console.error('Full error:', err);
-                    return res.status(500).json({ 
-                        error: 'Failed to store transaction',
-                        details: err.message 
-                    });
-                }
-                
-                console.log('✅ Transaction stored successfully with ID:', this.lastID);
-                
-                res.json({
-                    success: true,
-                    authorization_url: paystackResponse.data.authorization_url,
-                    access_code: paystackResponse.data.access_code,
-                    reference: paystackResponse.data.reference
-                });
+            ]);
+            
+            
+            res.json({
+                success: true,
+                authorization_url: paystackResponse.data.authorization_url,
+                access_code: paystackResponse.data.access_code,
+                reference: paystackResponse.data.reference
             });
             
         } catch (error) {
@@ -139,7 +111,14 @@ router.post('/initialize', auth, async (req, res) => {
                 details: error.message 
             });
         }
-    });
+        
+    } catch (error) {
+        console.error('Database error in payment initialization:', error);
+        res.status(500).json({ 
+            error: 'Database error',
+            details: error.message 
+        });
+    }
 });
 
 // Verify payment from Paystack

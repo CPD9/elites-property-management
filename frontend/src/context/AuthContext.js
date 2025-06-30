@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 
 import axios from 'axios';
 
@@ -18,7 +18,6 @@ export const AuthProvider = ({ children }) => {
 
   // Set up axios defaults
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
-  console.log('🔗 API_URL:', API_URL); // Debug log to verify correct URL
   
   const logout = () => {
     localStorage.removeItem('token');
@@ -71,7 +70,7 @@ export const AuthProvider = ({ children }) => {
     } else {
       setLoading(false);
     }
-  }, []);
+  }, []); // Remove verifyToken dependency to avoid infinite loop
 
   // Function to ensure token is set
   const ensureToken = () => {
@@ -106,10 +105,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const verifyToken = async (token) => {
+  const verifyToken = useCallback(async (token) => {
     try {
       // Try to make a simple authenticated request to verify token
-      const response = await axios.get(`${API_URL}/auth/me`);
+      await axios.get(`${API_URL}/auth/me`);
       const userData = localStorage.getItem('user');
       if (userData) {
         setUser(JSON.parse(userData));
@@ -117,7 +116,6 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     } catch (error) {
       // If token verification fails, try to get user data instead
-      console.log('Token verification failed, trying fallback...');
       try {
         const userData = localStorage.getItem('user');
         if (userData) {
@@ -130,7 +128,7 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
       }
     }
-  };
+  }, [API_URL]);
 
   const value = {
     user,

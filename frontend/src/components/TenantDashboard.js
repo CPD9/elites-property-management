@@ -108,9 +108,9 @@ const TenantDashboard = () => {
 
   const tabs = [
     { id: 'overview', name: 'Overview', icon: Home },
+    { id: 'payments', name: 'Payments', icon: CreditCard },
     { id: 'calendar', name: 'Calendar', icon: Calendar },
     { id: 'maintenance', name: 'Maintenance', icon: Wrench },
-    { id: 'payments', name: 'Payments', icon: CreditCard },
     { id: 'lease', name: 'Lease Info', icon: Calendar }
   ];
 
@@ -129,19 +129,19 @@ const TenantDashboard = () => {
       <Toaster position="top-right" />
       <div className="space-y-6">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
           <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
+            <div className="p-3 sm:p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <CreditCard className="h-6 w-6 text-blue-400" />
+                  <CreditCard className="h-5 w-5 sm:h-6 sm:w-6 text-blue-400" />
                 </div>
-                <div className="ml-5 w-0 flex-1">
+                <div className="ml-3 sm:ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
-                      Total Payments
+                    <dt className="text-xs sm:text-sm font-medium text-gray-500 truncate">
+                      Total
                     </dt>
-                    <dd className="text-lg font-medium text-gray-900">
+                    <dd className="text-base sm:text-lg font-medium text-gray-900">
                       {stats.totalPayments}
                     </dd>
                   </dl>
@@ -151,17 +151,17 @@ const TenantDashboard = () => {
           </div>
 
           <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
+            <div className="p-3 sm:p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <CheckCircle className="h-6 w-6 text-green-400" />
+                  <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-400" />
                 </div>
-                <div className="ml-5 w-0 flex-1">
+                <div className="ml-3 sm:ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
+                    <dt className="text-xs sm:text-sm font-medium text-gray-500 truncate">
                       Paid
                     </dt>
-                    <dd className="text-lg font-medium text-green-600">
+                    <dd className="text-base sm:text-lg font-medium text-green-600">
                       {stats.paidPayments}
                     </dd>
                   </dl>
@@ -171,17 +171,17 @@ const TenantDashboard = () => {
           </div>
 
           <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
+            <div className="p-3 sm:p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <AlertCircle className="h-6 w-6 text-red-400" />
+                  <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6 text-red-400" />
                 </div>
-                <div className="ml-5 w-0 flex-1">
+                <div className="ml-3 sm:ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
+                    <dt className="text-xs sm:text-sm font-medium text-gray-500 truncate">
                       Overdue
                     </dt>
-                    <dd className="text-lg font-medium text-red-600">
+                    <dd className="text-base sm:text-lg font-medium text-red-600">
                       {stats.overduePayments}
                     </dd>
                   </dl>
@@ -190,18 +190,18 @@ const TenantDashboard = () => {
             </div>
           </div>
 
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
+          <div className="bg-white overflow-hidden shadow rounded-lg col-span-2 md:col-span-1">
+            <div className="p-3 sm:p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <DollarSign className="h-6 w-6 text-green-400" />
+                  <DollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-green-400" />
                 </div>
-                <div className="ml-5 w-0 flex-1">
+                <div className="ml-3 sm:ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">
+                    <dt className="text-xs sm:text-sm font-medium text-gray-500 truncate">
                       Outstanding
                     </dt>
-                    <dd className="text-lg font-medium text-red-600">
+                    <dd className="text-sm sm:text-lg font-medium text-red-600 truncate">
                       {formatCurrency(stats.totalOutstanding)}
                     </dd>
                   </dl>
@@ -243,7 +243,23 @@ const TenantDashboard = () => {
         {/* Tabs */}
         <div className="bg-white shadow rounded-lg">
           <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8 px-6">
+            {/* Mobile Tab Navigation */}
+            <div className="sm:hidden">
+              <select
+                value={activeTab}
+                onChange={(e) => setActiveTab(e.target.value)}
+                className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md mx-4 my-2"
+              >
+                {tabs.map((tab) => (
+                  <option key={tab.id} value={tab.id}>
+                    {tab.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            {/* Desktop Tab Navigation */}
+            <nav className="hidden sm:flex -mb-px space-x-8 px-6 overflow-x-auto">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 return (
@@ -254,17 +270,18 @@ const TenantDashboard = () => {
                       activeTab === tab.id
                         ? 'border-indigo-500 text-indigo-600'
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2`}
+                    } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 min-w-0 flex-shrink-0`}
                   >
                     <Icon className="h-5 w-5" />
-                    <span>{tab.name}</span>
+                    <span className="hidden md:block">{tab.name}</span>
+                    <span className="md:hidden">{tab.name.split(' ')[0]}</span>
                   </button>
                 );
               })}
             </nav>
           </div>
 
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             {/* Overview Tab */}
             {activeTab === 'overview' && (
               <div className="space-y-6">
@@ -508,86 +525,159 @@ const TenantDashboard = () => {
                 <h3 className="text-lg font-medium text-gray-900">All Payment History</h3>
                 
                 {payments.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Property</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paid Date</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reference</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {payments.map((payment) => (
-                          <tr key={payment.payment_id} className={payment.payment_status === 'overdue' ? 'bg-red-50' : ''}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                              {payment.property_name}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
-                              <div>
-                                {formatCurrency(payment.amount)}
-                                {payment.payment_status === 'overdue' && (
-                                  <div className="text-xs text-red-600">
-                                    + {formatCurrency(payment.amount * 0.05)} late fee
-                                  </div>
-                                )}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {formatDate(payment.due_date)}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {payment.payment_date ? formatDate(payment.payment_date) : '-'}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center">
+                  <>
+                    {/* Mobile View - Cards */}
+                    <div className="sm:hidden space-y-4">
+                      {payments.map((payment) => (
+                        <div 
+                          key={payment.payment_id} 
+                          className={`bg-white border rounded-lg p-4 ${payment.payment_status === 'overdue' ? 'border-red-200 bg-red-50' : 'border-gray-200'}`}
+                        >
+                          <div className="flex justify-between items-start mb-3">
+                            <div className="flex-1">
+                              <h4 className="font-medium text-gray-900 text-sm">{payment.property_name}</h4>
+                              <div className="flex items-center mt-1">
                                 {getPaymentStatusIcon(payment.payment_status)}
                                 <span className={`ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getPaymentStatusColor(payment.payment_status)}`}>
                                   {payment.payment_status}
                                 </span>
                               </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {payment.payment_reference || '-'}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                              {payment.payment_status === 'overdue' ? (
-                                <button
-                                  onClick={() => {
-                                    setSpecificPaymentId(payment.payment_id);
-                                    setShowPaymentModal(true);
-                                  }}
-                                  className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700"
-                                >
-                                  <CreditCard className="h-3 w-3 mr-1" />
-                                  Pay Now
-                                </button>
-                              ) : payment.payment_status === 'pending' ? (
-                                <button
-                                  onClick={() => {
-                                    setSpecificPaymentId(payment.payment_id);
-                                    setShowPaymentModal(true);
-                                  }}
-                                  className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700"
-                                >
-                                  <CreditCard className="h-3 w-3 mr-1" />
-                                  Pay Now
-                                </button>
-                              ) : payment.payment_status === 'paid' ? (
-                                <span className="text-green-600 text-xs">✓ Paid</span>
-                              ) : (
-                                <span className="text-gray-400 text-xs">-</span>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-lg font-bold text-gray-900">
+                                {formatCurrency(payment.amount)}
+                              </div>
+                              {payment.payment_status === 'overdue' && (
+                                <div className="text-xs text-red-600">
+                                  + {formatCurrency(payment.amount * 0.05)} late fee
+                                </div>
                               )}
-                            </td>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2 text-sm text-gray-600">
+                            <div className="flex justify-between">
+                              <span>Due Date:</span>
+                              <span>{formatDate(payment.due_date)}</span>
+                            </div>
+                            {payment.payment_date && (
+                              <div className="flex justify-between">
+                                <span>Paid Date:</span>
+                                <span>{formatDate(payment.payment_date)}</span>
+                              </div>
+                            )}
+                            {payment.payment_reference && (
+                              <div className="flex justify-between">
+                                <span>Reference:</span>
+                                <span className="text-xs">{payment.payment_reference}</span>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {(payment.payment_status === 'overdue' || payment.payment_status === 'pending') && (
+                            <div className="mt-3 pt-3 border-t border-gray-200">
+                              <button
+                                onClick={() => {
+                                  setSpecificPaymentId(payment.payment_id);
+                                  setShowPaymentModal(true);
+                                }}
+                                className={`w-full inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded text-white ${
+                                  payment.payment_status === 'overdue' 
+                                    ? 'bg-red-600 hover:bg-red-700' 
+                                    : 'bg-blue-600 hover:bg-blue-700'
+                                }`}
+                              >
+                                <CreditCard className="h-4 w-4 mr-2" />
+                                Pay Now
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Desktop View - Table */}
+                    <div className="hidden sm:block overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Property</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paid Date</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reference</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {payments.map((payment) => (
+                            <tr key={payment.payment_id} className={payment.payment_status === 'overdue' ? 'bg-red-50' : ''}>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {payment.property_name}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                                <div>
+                                  {formatCurrency(payment.amount)}
+                                  {payment.payment_status === 'overdue' && (
+                                    <div className="text-xs text-red-600">
+                                      + {formatCurrency(payment.amount * 0.05)} late fee
+                                    </div>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {formatDate(payment.due_date)}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {payment.payment_date ? formatDate(payment.payment_date) : '-'}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center">
+                                  {getPaymentStatusIcon(payment.payment_status)}
+                                  <span className={`ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getPaymentStatusColor(payment.payment_status)}`}>
+                                    {payment.payment_status}
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {payment.payment_reference || '-'}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                {payment.payment_status === 'overdue' ? (
+                                  <button
+                                    onClick={() => {
+                                      setSpecificPaymentId(payment.payment_id);
+                                      setShowPaymentModal(true);
+                                    }}
+                                    className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700"
+                                  >
+                                    <CreditCard className="h-3 w-3 mr-1" />
+                                    Pay Now
+                                  </button>
+                                ) : payment.payment_status === 'pending' ? (
+                                  <button
+                                    onClick={() => {
+                                      setSpecificPaymentId(payment.payment_id);
+                                      setShowPaymentModal(true);
+                                    }}
+                                    className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700"
+                                  >
+                                    <CreditCard className="h-3 w-3 mr-1" />
+                                    Pay Now
+                                  </button>
+                                ) : payment.payment_status === 'paid' ? (
+                                  <span className="text-green-600 text-xs">✓ Paid</span>
+                                ) : (
+                                  <span className="text-gray-400 text-xs">-</span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </>
                 ) : (
                   <div className="text-center py-12">
                     <CreditCard className="mx-auto h-12 w-12 text-gray-400" />

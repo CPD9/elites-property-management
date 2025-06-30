@@ -90,7 +90,7 @@ const emailTemplates = {
                     </div>
                     
                     <div style="text-align: center; margin: 30px 0;">
-                        <a href="http://localhost:3000/login" style="background: #4f46e5; color: white; padding: 12px 25px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Access Tenant Portal</a>
+                        <a href="${process.env.FRONTEND_URL || 'https://elites-property-management.onrender.com'}/login" style="background: #4f46e5; color: white; padding: 12px 25px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Access Tenant Portal</a>
                     </div>
                     
                     <h3 style="color: #333; margin-top: 30px;">What you can do in your portal:</h3>
@@ -166,7 +166,7 @@ const emailTemplates = {
                     </div>
                     
                     <div style="text-align: center; margin: 30px 0;">
-                        <a href="http://localhost:3000/login" style="background: #dc2626; color: white; padding: 12px 25px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">View Payment Details</a>
+                        <a href="${process.env.FRONTEND_URL || 'https://elites-property-management.onrender.com'}/login" style="background: #dc2626; color: white; padding: 12px 25px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">View Payment Details</a>
                     </div>
                     
                     <h3 style="color: #333; margin-top: 30px;">What happens next:</h3>
@@ -242,7 +242,7 @@ const emailTemplates = {
                     </div>
                     
                     <div style="text-align: center; margin: 30px 0;">
-                        <a href="http://localhost:3000/login" style="background: #1d4ed8; color: white; padding: 12px 25px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">View Payment Details</a>
+                        <a href="${process.env.FRONTEND_URL || 'https://elites-property-management.onrender.com'}/login" style="background: #1d4ed8; color: white; padding: 12px 25px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">View Payment Details</a>
                     </div>
                     
                     <h3 style="color: #333; margin-top: 30px;">Payment Options:</h3>
@@ -326,7 +326,7 @@ const emailTemplates = {
                     </div>
                     
                     <div style="text-align: center; margin: 30px 0;">
-                        <a href="http://localhost:3000/login" style="background: #059669; color: white; padding: 12px 25px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">View Transaction History</a>
+                        <a href="${process.env.FRONTEND_URL || 'https://elites-property-management.onrender.com'}/login" style="background: #059669; color: white; padding: 12px 25px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">View Transaction History</a>
                     </div>
                     
                     <h3 style="color: #333; margin-top: 30px;">What's next:</h3>

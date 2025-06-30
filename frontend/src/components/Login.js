@@ -196,8 +196,8 @@ const Login = () => {
             <div className="mt-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
               <h4 className="text-sm font-medium text-gray-900 mb-2">Test Credentials:</h4>
               <div className="text-xs text-gray-600 space-y-1">
-                <p><strong>Admin:</strong> admin@tenantmanagement.com / admin123</p>
-                <p><strong>Tenant:</strong> test@tenant.com / tenant123</p>
+                <p><strong>Admin:</strong> admin@elitesproperty.com / admin123</p>
+                <p><strong>Tenant:</strong> bola@gmail.com / password123</p>
               </div>
             </div>
           </div>

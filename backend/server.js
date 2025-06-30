@@ -61,19 +61,6 @@ app.get('/api/test-db', async (req, res) => {
     }
 });
 
-// Test users and environment
-app.get('/api/test-env', async (req, res) => {
-    try {
-        const users = await db.all('SELECT email, role FROM users');
-        res.json({
-            jwtSecret: !!process.env.JWT_SECRET,
-            userCount: users.length,
-            users: users
-        });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
